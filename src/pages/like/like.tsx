@@ -109,8 +109,9 @@ class Like extends Component {
   componentDidHide() { }
   init = async (res) => {
     const { longitude, latitude } = res
+    const { phone } = this.$router.params
     const parmas = {
-      districts: 'all', location: `${longitude},${latitude}`, page: 1, type: 1, per_page: 20, phone: 15818512126
+      districts: 'all', location: `${longitude},${latitude}`, page: 1, type: 1, per_page: 20, phone: Number(phone)
     }
     this.setState({ parmas })
     this.getRoomList(parmas)

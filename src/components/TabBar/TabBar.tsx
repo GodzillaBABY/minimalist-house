@@ -1,29 +1,35 @@
 import Taro, { Component } from '@tarojs/taro'
+import { View, Image } from '@tarojs/components'
 
 import './TabBar.less'
-import { View, Image } from '@tarojs/components'
 
 class TabBar extends Component {
   static defaultProps = {
-    current: 0,
-    background: '#fff',
-    color: '#999',
-    tintColor: '#6190e8',
-    fixed: false,
-    onClick: () => { },
-    tabList: []
+    indexSrc: '',
+    mySrc: '',
+    goToIndex: () => { },
+    goToMy: () => { }
   }
   constructor(props) {
     super(props)
+    this.state = {
+      updateCurrent: props.current
+    }
   }
+
   render() {
+    const { indexSrc, mySrc, goToIndex, goToMy } = this.props
+    // const { updateCurrent } = this.state
     return (<View className='bar'>
-      {/* <View className='bar-index'>
-        <Image className='bar-index'></Image>
+      <View className='bar-btn'>
+        <View className='bar-index' onClick={goToIndex}>
+          <Image className='bar-index-img' src={indexSrc}></Image>
+        </View>
+        <View className='line'>.</View>
+        <View className='bar-index' onClick={goToMy}>
+          <Image className='bar-my-img' src={mySrc}></Image>
+        </View>
       </View>
-      <View className='bar-my'>
-        <Image className='bar-my' src={}></Image>
-      </View> */}
     </View>)
   }
 }

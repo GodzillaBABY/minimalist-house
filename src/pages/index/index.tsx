@@ -3,7 +3,8 @@ import { View, Button, Text, Image, ScrollView, Swiper, SwiperItem, Picker } fro
 import { observer, inject } from '@tarojs/mobx'
 // import { AtIcon } from 'taro-ui'
 import locationFun from '../../util/location'
-import { getRoomList } from '../../api/room'
+import { getRoomList, getBanner } from '../../api/room'
+import TabBar from '../../components/TabBar/TabBar'
 import './index.less'
 
 type PageStateProps = {
@@ -34,6 +35,10 @@ class Index extends Component {
     this.state = {
       show_header: false,
       headerOpacity: 0,
+      banner: {
+        bgImages: '',
+        wheelImages: ['']
+      },
       headerLabel: [
         '品牌公寓', '精准查找', '快速看房', '无中介费'
       ],
@@ -66,8 +71,10 @@ class Index extends Component {
         //   location: '2.64km'
         // }
       ],
-      roomListParmas: { districts: 'all', location: '116.483038,39.990633', page: 1, type: 1, per_page: 20 },
-      totalPage: 1
+      roomListParmas: { districts: 'all', location: '116.483038,39.990633', page: 1, type: 0, per_page: 20 },
+      totalPage: 1,
+      rentFlg: false,
+      rentC: false
     }
   }
   /**
@@ -111,9 +118,10 @@ class Index extends Component {
   init = async (res) => {
     const { longitude, latitude } = res
     const parmas = {
-      districts: 'all', location: `${longitude},${latitude}`, page: 1, type: 1, per_page: 20
+      districts: 'all', location: `${longitude},${latitude}`, page: 1, type: 0, per_page: 20
     }
     this.setState({ parmas })
+    this.getBanner()
     this.getRoomList(parmas)
   }
   getMore = () => {
@@ -124,6 +132,22 @@ class Index extends Component {
     parmas = { ...parmas, page: page }
     this.setState({ roomListParmas: parmas })
     this.getRoomList(parmas, true)
+  }
+  getBanner = async () => {
+    try {
+      const bannerRes = await getBanner()
+      const { data, code } = bannerRes
+      if (code === 0 && data) {
+        this.setState({
+          banner: data
+        })
+      } else {
+        Taro.showToast({ title: '网络错误' })
+      }
+    } catch (e) {
+      console.log(e)
+      Taro.showToast({ title: '网络错误' })
+    }
   }
   getRoomList = async (parmas = { districts: 'all', location: '116.483038,39.990633', page: 1, type: 1, per_page: 20 }, isMore = false) => {
     try {
@@ -188,9 +212,7 @@ class Index extends Component {
     // this.onloadUserLocation()
     Taro.navigateTo({ url: `/pages/detail/detail?id=${id}` })
   }
-  clkLike = () => {
 
-  }
   isIphoneX = () => {
     if (process.env.TARO_ENV === 'h5') {
       return false // window.devicePixelRatio && window.devicePixelRatio === 3 && window.screen.width === 375 && testUA('iPhone')
@@ -198,6 +220,7 @@ class Index extends Component {
     const { model } = Taro.getSystemInfoSync()
     return model.search('iPhone X') !== -1
   }
+
   getPaddingTop = () => {
     let customStyle
     const infoData = Taro.getSystemInfoSync() || {};
@@ -208,6 +231,12 @@ class Index extends Component {
       top: `${domHeight}px`
     }
     return customStyle
+  }
+  goToMy = () => {
+    Taro.redirectTo({ url: '../my/my' })
+  }
+  goToIndex = () => {
+    return
   }
   // dealLabel = (label) => {
   //   if (!label) return
@@ -241,14 +270,29 @@ class Index extends Component {
       </View>
     ) : null;
   };
+  rentClk = () => {
+    const { roomListParmas, rentFlg } = this.state
+    let params, type
+    if (!rentFlg) {
+      params = { ...roomListParmas, type: 1 }
+      type = true
+    } else {
+      params = { ...roomListParmas, type: 2 }
+      type = false
+    }
+    this.setState({ rentFlg: type, rentC: true, roomListParmas: params })
+    this.getRoomList(params)
+  }
   render() {
     // console.log(location, 111111)
-    const { headerLabel, quyu, quyuChecked, swiperBanner, roomList } = this.state
+    const { headerLabel, quyu, quyuChecked, banner, swiperBanner, roomList, rentFlg, rentC } = this.state
+    const { bgImages = `${require}('../../assets/expbj.jpg')`, wheelImages = [`${require}('../../assets/expbj.jpg')`, `${require}('../../assets/expbj.jpg')`] } = banner
+    console.log(rentFlg, 'rent')
     return (
       <ScrollView scrollY className='index' onScroll={this.handleScroll} onScrollToLower={this.getMore}  >
         {this.renderHeader()}
         <View className='index-header'>
-          <Image className='index-header-banner' src={require('../../assets/expbj.jpg')}></Image>
+          <Image className='index-header-banner' src={bgImages ? bgImages : require('../../assets/expbj.jpg')}></Image>
           <View className='index-header-main'>
             <View className='index-header-info'>
               <View className='info-logo'>
@@ -277,7 +321,16 @@ class Index extends Component {
               circular
               indicatorDots
               autoplay>
-              <SwiperItem>
+              {
+                wheelImages.map(item => {
+                  return (<SwiperItem>
+                    <View className='swiper-item'>
+                      <Image className='swiper-item-img' src={item ? item : require('../../assets/expbj.jpg')}></Image>
+                    </View>
+                  </SwiperItem>)
+                })
+              }
+              {/* <SwiperItem>
                 <View className='swiper-item'>
                   <Image className='swiper-item-img' src={require('../../assets/expbj.jpg')}></Image>
                 </View>
@@ -286,7 +339,7 @@ class Index extends Component {
                 <View className='swiper-item'>
                   <Image className='swiper-item-img' src={require('../../assets/expbj.jpg')}></Image>
                 </View>
-              </SwiperItem>
+              </SwiperItem> */}
             </Swiper>
           </View>
           <View className='index-tab' style={this.getPaddingTop()}>
@@ -297,7 +350,9 @@ class Index extends Component {
                 </View>
               </Picker>
             </View>
-            <View className='index-tab-item'>租金排序</View>
+            <View className='index-tab-item' onClick={this.rentClk}>租金排序
+            {rentC ? (rentFlg ? <Image className='rent-img' src={require('../../assets/up-active.png')}></Image> : <Image className='rent-img' src={require('../../assets/down-active.png')}></Image>) : <Image className='rent-img' src={require('../../assets/up.png')}></Image>}
+            </View>
           </View>
           <View className='index-content'>
             {roomList.map(item => {
@@ -335,6 +390,7 @@ class Index extends Component {
             })}
           </View>
         </View>
+        <TabBar goToMy={this.goToMy} goToIndex={this.goToIndex} indexSrc={`${require('../../assets/index-active.png')}`} mySrc={`${require('../../assets/my.png')}`}></TabBar>
       </ScrollView>
     )
   }

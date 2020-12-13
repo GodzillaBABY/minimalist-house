@@ -15,3 +15,6 @@ export function like(parmas): Promise<IResult<any>> {
 export function cancelLike(parmas): Promise<IResult<any>> {
   return httpGet('/roomCollect/cancel', parmas);
 }
+export function getBanner(): Promise<IResult<any>> {
+  return httpGet('/images/room/getImages');
+}

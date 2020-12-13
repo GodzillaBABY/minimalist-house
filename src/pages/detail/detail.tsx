@@ -1,8 +1,9 @@
 import Taro, { Component, Config } from '@tarojs/taro'
-import { View, Button, Text, Image, ScrollView, Swiper, SwiperItem, Map } from '@tarojs/components'
+import { View, Button, Text, Image, ScrollView, Swiper, SwiperItem, Map, Input } from '@tarojs/components'
 import { observer, inject } from '@tarojs/mobx'
 // import { AtIcon } from 'taro-ui'
 import { getRoomDetail, like, cancelLike } from '../../api/room'
+import Modal from '../../components/modal/modal'
 import './detail.less'
 
 type PageStateProps = {
@@ -73,7 +74,9 @@ class Detail extends Component {
       }],
       roomListParmas: { districts: 'all', location: '116.483038,39.990633', page: 1, type: 1, per_page: 999 },
       likeFlg: false,
-      phone: 0
+      phone: '',
+      phonePop: false,
+      phoneFlg: false
     }
   }
   /**
@@ -129,7 +132,15 @@ class Detail extends Component {
   }
   init = () => {
     const { id } = this.$router.params
-    this.getRoomInfo(Number(id))
+    const phoneStore = Taro.getStorageSync('phone')
+    let phone
+    if (phoneStore) {
+      this.setState({ phoneFlg: true, phone: Number(phoneStore) })
+      phone = phoneStore
+    } else {
+      phone = null
+    }
+    this.getRoomInfo(Number(id), phone)
   }
 
 
@@ -143,9 +154,9 @@ class Detail extends Component {
     const { counterStore } = this.props
     counterStore.incrementAsync()
   }
-  getRoomInfo = async (id = 1) => {
+  getRoomInfo = async (id = 1, phone = null) => {
     try {
-      const parmas = { id: id }
+      const parmas = { id: id, phone: phone }
       const roomDetailRes = await getRoomDetail(parmas)
       const { data, code } = roomDetailRes
       if (code === 0 && data) {
@@ -153,7 +164,8 @@ class Detail extends Component {
         const markers = [{ longitude: Number(longitude), latitude: Number(latitude) }]
         this.setState({
           roomData: data,
-          markers: markers
+          markers: markers,
+          likeFlg: data.likeFlg
         })
       } else {
         Taro.showToast({ title: '网络错误' })
@@ -165,9 +177,14 @@ class Detail extends Component {
   }
   clkLike = async (id) => {
     try {
-      const parmas = { roomId: id, phone: 15818512126 }
-      const { likeFlg } = this.state
-      console.log('likekkkk', likeFlg)
+      const { likeFlg, phoneFlg, phone } = this.state
+      if (!phoneFlg) {
+        this.setState({
+          phonePop: true
+        })
+        return
+      }
+      const parmas = { roomId: id, phone: phone }
       if (likeFlg) {
         const likeRes = await cancelLike(parmas)
         const { data, code } = likeRes
@@ -226,8 +243,9 @@ class Detail extends Component {
   }
 
   freeCall = () => {
+    const { roomData: { contactPhone } } = this.state
     Taro.makePhoneCall({
-      phoneNumber: '15818512126', fail: () => {
+      phoneNumber: contactPhone, fail: () => {
         Taro.showToast({ title: '呼叫失败' })
       }
     })
@@ -241,10 +259,32 @@ class Detail extends Component {
       }
     })
   }
-
+  onConfirm = () => {
+    const { phone } = this.state
+    if (!phone) {
+      Taro.showToast({ title: '请输入电话号码！' })
+      return
+    } else if (!(/^1(3|4|5|6|7|8|9)\d{9}$/.test(phone))) {
+      Taro.showToast({ title: '手机号码有误！' })
+      return
+    }
+    Taro.setStorageSync('phone', phone)
+    Taro.showToast({ title: '手机号记录成功' })
+    this.onCancel()
+  }
+  onCancel = () => {
+    this.setState({
+      phonePop: false
+    })
+  }
+  inputPhone = (e) => {
+    this.setState({
+      phone: e.detail.value
+    })
+  }
   render() {
     const { counterStore: { counter } } = this.props
-    const { roomData, markers, likeFlg } = this.state
+    const { roomData, markers, likeFlg, phone, phonePop } = this.state
     const { latitude, longitude, matchingTag } = roomData
     const [latitudeN, longitudeN] = [Number(latitude), Number(longitude)]
     return (<ScrollView scrollY className='detail'>
@@ -263,14 +303,14 @@ class Detail extends Component {
         circular
         indicatorDots
         autoplay>
-        {/* {roomData.roomImages.map(item => {
+        {roomData.roomImages.map(item => {
           return (<SwiperItem>
             <View className='swiper-item'>
               <Image className='swiper-item-img' mode='widthFix' src={item}></Image>
             </View>
           </SwiperItem>)
-        })} */}
-        <SwiperItem>
+        })}
+        {/* <SwiperItem>
           <View className='swiper-item'>
             <Image className='swiper-item-img' mode='widthFix' src={'https://tgi1.jia.com/123/203/23203900.jpg'}></Image>
           </View>
@@ -279,7 +319,7 @@ class Detail extends Component {
           <View className='swiper-item'>
             <Image className='swiper-item-img' mode='widthFix' src={'https://tgi1.jia.com/123/203/23203900.jpg'}></Image>
           </View>
-        </SwiperItem>
+        </SwiperItem> */}
       </Swiper>
       <View className='detail-main'>
         <View className='detail-title'>
@@ -335,13 +375,30 @@ class Detail extends Component {
       </View>
 
       <View className='detail-contact'>
-        <View className='detail-contact-tel' onClick={this.freeCall}>
-          <Text className='txt'>电话咨询</Text>
-        </View>
-        <View className='detail-contact-wechat' onClick={this.copyWechat}>
-          <Text className='txt'>微信联系</Text>
-        </View>
+        <View className='detail-contact-box'>
+          <View className='detail-contact-tel' onClick={this.freeCall}>
+            <Text className='txt'>电话咨询</Text>
+          </View>
+          <View className='detail-contact-wechat' onClick={this.copyWechat}>
+            <Text className='txt'>微信联系</Text>
+          </View>        </View>
+
       </View>
+      <Modal
+        animationType='slide'
+        visible={phonePop}
+      >
+        <View className='phone'>
+          <View className='phone-title'>请输入您的电话号码以收藏房源</View>
+          <View className='phone-input'>
+            <View className='phone-input-txt'>电话号码：</View><Input onInput={this.inputPhone} maxLength={11} value={phone} type='number' className='phone-input-input' placeholder='请输入您的电话号码'></Input>
+          </View>
+          <View className='phone-btn'>
+            <View className='phone-btn-comfirm' onClick={this.onConfirm}>确定</View>
+            <View className='phone-btn-cancel' onClick={this.onCancel}>取消</View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>)
   }
 }

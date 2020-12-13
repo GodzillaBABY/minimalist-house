@@ -47,20 +47,7 @@ class App extends Component {
       'scope.userLocation': {
         'desc': '是否同意勺找房调用你的位置信息' // 高速公路行驶持续后台定位
       }
-    },
-    tabBar: {
-      custom: true,
-      color: "#000000",
-      selectedColor: "#000000",
-      backgroundColor: "#000000",
-      list: [{
-        pagePath: "pages/index/index",
-        text: '首页'
-      }, {
-        pagePath: "pages/my/my",
-        text: "接口"
-      }]
-    },
+    }
   }
 
   componentDidMount() { }
