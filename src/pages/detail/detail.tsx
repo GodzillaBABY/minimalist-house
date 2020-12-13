@@ -22,19 +22,23 @@ interface Detail {
 // 电视改为投影
 const labelMap =
 {
-  '冰箱': '../../assets/img/icon/bingxiang.jpg',
-  '独立淋浴间': '../../assets/img/icon/shower.png',
-  '榻榻米': '../../assets/img/icon/tatami.png',
-  '沙发': '../../assets/img/icon/sofa.png',
-  '台灯': '../../assets/img/icon/taideng.png',
-  '全身镜': '../../assets/img/icon/mirror.png',
-  '衣柜': '../../assets/img/icon/yigui.png',
-  '多功能柜': '../../assets/img/icon/guizi.png',
-  '茶几': '../../assets/img/icon/chaji.png',
-  '音响': '../../assets/img/icon/yinxiang.png',
-  '自助快递柜': '../../assets/img/icon/kuaidi.png',
-  '公共办公空间': '../../assets/img/icon/bangong.png',
-  '电视改为投影': '../../assets/img/icon/touying.png',
+  '冰箱': `${require('../../assets/bingxiang.jpg')}`,
+  '独立淋浴间': `${require('../../assets/shower.png')}`,
+  '榻榻米': `${require('../../assets/tatami.png')}`,
+  '沙发': `${require('../../assets/sofa.png')}`,
+  '台灯': `${require('../../assets/taideng.png')}`,
+  '全身镜': `${require('../../assets/mirror.png')}`,
+  '衣柜': `${require('../../assets/yigui.png')}`,
+  '多功能柜': `${require('../../assets/guizi.png')}`,
+  '茶几': `${require('../../assets/chaji.png')}`,
+  '音响': `${require('../../assets/yinxiang.png')}`,
+  '自助快递柜': `${require('../../assets/kuaidi.png')}`,
+  '公共办公空间': `${require('../../assets/bangong.png')}`,
+  '电视改为投影': `${require('../../assets/touying.png')}`,
+  '洗衣机': `${require('../../assets/xiyiji.png')}`,
+  '空调': `${require('../../assets/kongtiao.png')}`,
+  '橱柜': `${require('../../assets/chugui.png')}`,
+  '电子锁': `${require('../../assets/dianzi.png')}`,
 }
 
 @inject('counterStore')
@@ -246,10 +250,10 @@ class Detail extends Component {
     return (<ScrollView scrollY className='detail'>
       <View className='share-box'>
         <View className='share-box-item' onClick={() => this.clkLike(roomData.id)}>
-          <Image className='share-box-icon like-icon' src={likeFlg ? require('../../assets/img/icon/liked.png') : require('../../assets/img/icon/like.png')}></Image>
+          <Image className='share-box-icon like-icon' src={likeFlg ? require('../../assets/liked.png') : require('../../assets/like.png')}></Image>
         </View>
         <Button openType={'share'} className='share-box-item'>
-          <Image className='share-box-icon share-icon' src={require('../../assets/img/icon/share.png')}></Image>
+          <Image className='share-box-icon share-icon' src={require('../../assets/share.png')}></Image>
         </Button>
       </View>
       <Swiper
@@ -286,10 +290,10 @@ class Detail extends Component {
           <View className='unit'>元/月起</View>
         </View>
         <View className='nearby'>
-          <Image className='nearby-img' src={require('../../assets/img/icon/nearby.png')}></Image>
+          <Image className='nearby-img' src={require('../../assets/nearby.png')}></Image>
           <Text className='nearby-txt'>{roomData.nearby}</Text></View>
         <View className='location'>
-          <View className='location-l'><Image className='location-img' src={require('../../assets/img/icon/location.png')}></Image>
+          <View className='location-l'><Image className='location-img' src={require('../../assets/location.png')}></Image>
             <Text className='location-txt'>{roomData.address}</Text></View>
           <View className='location-btn'
             onClick={this.getLocation}
@@ -310,7 +314,7 @@ class Detail extends Component {
         <View className='map'>
           <View className='map-title'>周边配套和交通</View>
           <View className='map-location'>
-            <Image className='map-location-img' src={require('../../assets/img/icon/location.png')}></Image>
+            <Image className='map-location-img' src={require('../../assets/location.png')}></Image>
             <Text className='map-location-txt'>{roomData.address}</Text>
             <View className='map-location-btn'
               onClick={this.getLocation}
@@ -319,7 +323,7 @@ class Detail extends Component {
           <View className='map-cover'
             onClick={this.getLocation}
           >
-            <Image className='map-cover-img' src={require('../../assets/img/expbj.jpg')}  ></Image>
+            <Image className='map-cover-img' src={require('../../assets/expbj.jpg')}  ></Image>
           </View>
           <Map className='map-map'
             markers={markers}

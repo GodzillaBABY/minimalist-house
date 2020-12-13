@@ -3,8 +3,8 @@ import { View, Button, Text, Image, ScrollView, Swiper, SwiperItem, Picker } fro
 import { observer, inject } from '@tarojs/mobx'
 // import { AtIcon } from 'taro-ui'
 import locationFun from '../../util/location'
-import { getRoomList } from '../../api/room'
-import './index.less'
+import { likeList } from '../../api/room'
+import './like.less'
 
 type PageStateProps = {
   counterStore: {
@@ -16,7 +16,7 @@ type PageStateProps = {
   location: any
 }
 
-interface Index {
+interface Like {
   props: PageStateProps;
   state: any
 }
@@ -28,7 +28,7 @@ interface Index {
 const app = getApp();
 @inject('counterStore')
 @observer
-class Index extends Component {
+class Like extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -66,7 +66,7 @@ class Index extends Component {
         //   location: '2.64km'
         // }
       ],
-      roomListParmas: { districts: 'all', location: '116.483038,39.990633', page: 1, type: 1, per_page: 20 },
+      roomListParmas: { districts: 'all', location: '116.483038,39.990633', page: 1, type: 1, per_page: 20, phone: 15818512126 },
       totalPage: 1
     }
   }
@@ -81,7 +81,6 @@ class Index extends Component {
     disableScroll: process.env.TARO_ENV === 'weapp',
     // @ts-ignore
     allowsBounceVertical: 'NO',
-    navigationStyle: 'custom',
     // @ts-ignore
     transparentTitle: 'auto',
     titlePenetrate: 'YES',
@@ -111,13 +110,13 @@ class Index extends Component {
   init = async (res) => {
     const { longitude, latitude } = res
     const parmas = {
-      districts: 'all', location: `${longitude},${latitude}`, page: 1, type: 1, per_page: 20
+      districts: 'all', location: `${longitude},${latitude}`, page: 1, type: 1, per_page: 20, phone: 15818512126
     }
     this.setState({ parmas })
     this.getRoomList(parmas)
   }
   getMore = () => {
-    let parmas = this.state.roomListParmas
+    let parmas = this.state.parmas
     const totalPage = this.state.totalPage
     if (totalPage === parmas.page) return
     const page = parmas.page + 1
@@ -125,10 +124,10 @@ class Index extends Component {
     this.setState({ roomListParmas: parmas })
     this.getRoomList(parmas, true)
   }
-  getRoomList = async (parmas = { districts: 'all', location: '116.483038,39.990633', page: 1, type: 1, per_page: 20 }, isMore = false) => {
+  getRoomList = async (parmas = { districts: 'all', location: '116.483038,39.990633', page: 1, type: 1, per_page: 20, phone: 15818512126 }, isMore = false) => {
     try {
       Taro.showLoading({ title: '加载中...' })
-      const roomListRes = await getRoomList(parmas)
+      const roomListRes = await likeList(parmas)
       const roomList = this.state.roomList
       const { data, code } = roomListRes
       if (code === 0 && data) {
@@ -145,17 +144,6 @@ class Index extends Component {
       Taro.hideLoading()
       Taro.showToast({ title: '网络错误' })
     }
-  }
-  quyuChange = (e) => {
-
-    let parmas = this.state.roomListParmas, districts
-    districts = e.detail.value == 0 ? 'all' : e.detail.value
-    parmas = { ...parmas, districts: districts }
-    this.setState({
-      quyuChecked: this.state.quyu[e.detail.value],
-      parmas: parmas
-    })
-    this.getRoomList(parmas)
   }
   // 页面滚动
   handleScroll = e => {
@@ -209,11 +197,7 @@ class Index extends Component {
     }
     return customStyle
   }
-  // dealLabel = (label) => {
-  //   if (!label) return
-  //   const labelRes = label.split(',')
-  //   return labelRes
-  // }
+
   // 渲染Header
   renderHeader = () => {
     const { headerOpacity, show_header } = this.state;
@@ -246,59 +230,7 @@ class Index extends Component {
     const { headerLabel, quyu, quyuChecked, swiperBanner, roomList } = this.state
     return (
       <ScrollView scrollY className='index' onScroll={this.handleScroll} onScrollToLower={this.getMore}  >
-        {this.renderHeader()}
-        <View className='index-header'>
-          <Image className='index-header-banner' src={require('../../assets/expbj.jpg')}></Image>
-          <View className='index-header-main'>
-            <View className='index-header-info'>
-              <View className='info-logo'>
-                <Image className='info-logo-img' src={require('../../assets/header-logo.jpg')}></Image>
-              </View>
-              <View className='info-txt'>
-                <View className='info-txt-name'>勺找房</View>
-                <View className='info-txt-des'>城市梦想家</View>
-              </View>
-            </View>
-            <View className='index-header-label'>
-              {headerLabel.map(item => {
-                return (<View className='label-box'>
-                  <Text className='label-box-txt'>{item}</Text>
-                </View>)
-              })}
-            </View>
-          </View>
-        </View>
         <View className='index-main'>
-          <View className='index-main-banner'>
-            <Swiper
-              className='index-main-banner-swiper'
-              indicatorColor='#999'
-              indicatorActiveColor='#333'
-              circular
-              indicatorDots
-              autoplay>
-              <SwiperItem>
-                <View className='swiper-item'>
-                  <Image className='swiper-item-img' src={require('../../assets/expbj.jpg')}></Image>
-                </View>
-              </SwiperItem>
-              <SwiperItem>
-                <View className='swiper-item'>
-                  <Image className='swiper-item-img' src={require('../../assets/expbj.jpg')}></Image>
-                </View>
-              </SwiperItem>
-            </Swiper>
-          </View>
-          <View className='index-tab' style={this.getPaddingTop()}>
-            <View className='index-tab-item'>
-              <Picker mode='selector' className='selector-quyu' range={quyu} onChange={this.quyuChange}>
-                <View className='picker'>
-                  {quyuChecked}
-                </View>
-              </Picker>
-            </View>
-            <View className='index-tab-item'>租金排序</View>
-          </View>
           <View className='index-content'>
             {roomList.map(item => {
               const img = item.roomImages ? item.roomImages[0] : ''
@@ -340,4 +272,4 @@ class Index extends Component {
   }
 }
 
-export default Index
+export default Like

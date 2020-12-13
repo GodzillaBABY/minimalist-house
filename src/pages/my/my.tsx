@@ -21,7 +21,7 @@ interface My {
 // interface Istate{
 //   headerLabel:any
 // }
-// const bgImg = '/assets/img/icon_exchange_gift_card.png'
+// const bgImg = '/assets/icon_exchange_gift_card.png'
 @inject('counterStore')
 @observer
 class My extends Component {
@@ -98,7 +98,7 @@ class My extends Component {
     return (
       <View className='my' >
         <View className='my-header'>
-          <Image src={require('../../assets/img/my-head-img.png')} className='my-header-head'></Image>
+          <Image src={require('../../assets/my-head-img.png')} className='my-header-head'></Image>
           <Text className='my-header-name'>房友</Text>
         </View>
         <View className='my-section-box'>
@@ -106,7 +106,7 @@ class My extends Component {
             <Text className='my-section-txt'>我的收藏</Text>
           </View>
           <View className='my-section'>
-            <Text className='my-section-txt'>意见反馈</Text>
+            <Text className='my-section-txt'>联系我们</Text>
           </View>
         </View>
 
