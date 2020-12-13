@@ -1,4 +1,4 @@
-import Taro, { Component, Config, useRouter } from '@tarojs/taro'
+import Taro, { Component, Config } from '@tarojs/taro'
 import { View, Button, Text, Image, ScrollView, Swiper, SwiperItem, Map } from '@tarojs/components'
 import { observer, inject } from '@tarojs/mobx'
 // import { AtIcon } from 'taro-ui'
