@@ -22,19 +22,19 @@ interface Detail {
 // 电视改为投影
 const labelMap =
 {
-  '冰箱': '../../assets/img/tag/bingxiang.jpg',
-  '独立淋浴间': '../../assets/img/tag/shower.png',
-  '榻榻米': '../../assets/img/tag/tatami.png',
-  '沙发': '../../assets/img/tag/sofa.png',
-  '台灯': '../../assets/img/tag/taideng.png',
-  '全身镜': '../../assets/img/tag/mirror.png',
-  '衣柜': '../../assets/img/tag/yigui.png',
-  '多功能柜': '../../assets/img/tag/guizi.png',
-  '茶几': '../../assets/img/tag/chaji.png',
-  '音响': '../../assets/img/tag/yinxiang.png',
-  '自助快递柜': '../../assets/img/tag/kuaidi.png',
-  '公共办公空间': '../../assets/img/tag/bangong.png',
-  '电视改为投影': '../../assets/img/tag/touying.png',
+  '冰箱': '../../assets/img/icon/bingxiang.jpg',
+  '独立淋浴间': '../../assets/img/icon/shower.png',
+  '榻榻米': '../../assets/img/icon/tatami.png',
+  '沙发': '../../assets/img/icon/sofa.png',
+  '台灯': '../../assets/img/icon/taideng.png',
+  '全身镜': '../../assets/img/icon/mirror.png',
+  '衣柜': '../../assets/img/icon/yigui.png',
+  '多功能柜': '../../assets/img/icon/guizi.png',
+  '茶几': '../../assets/img/icon/chaji.png',
+  '音响': '../../assets/img/icon/yinxiang.png',
+  '自助快递柜': '../../assets/img/icon/kuaidi.png',
+  '公共办公空间': '../../assets/img/icon/bangong.png',
+  '电视改为投影': '../../assets/img/icon/touying.png',
 }
 
 @inject('counterStore')

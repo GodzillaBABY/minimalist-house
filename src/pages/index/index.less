@@ -169,15 +169,30 @@
   margin-bottom: 40px;
 }
 .index-content-item-img{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+.index-content-item-pic{
   width: 260px;
   height: 180px;
   margin-right: 30px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+
 }
 .index-content-item-r{
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: flex-start;  
+  justify-content: flex-start; 
+  width: 460px; 
+  overflow: hidden;
   .title{
     font-size: 32px;
     font-weight: bold;
@@ -205,6 +220,10 @@
     align-items: center;
     justify-content: flex-start;
     .label-item{
+      display: flex;
+      flex-flow: row;
+      align-items: center;
+      align-content: center;
       padding: 4px 10px;
       margin-right: 10px;
       background-color: #cbe8fe;

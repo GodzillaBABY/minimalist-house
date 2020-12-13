@@ -209,11 +209,11 @@ class Index extends Component {
     }
     return customStyle
   }
-  dealLabel = (label) => {
-    if (!label) return
-    const labelRes = label.split(',')
-    return labelRes
-  }
+  // dealLabel = (label) => {
+  //   if (!label) return
+  //   const labelRes = label.split(',')
+  //   return labelRes
+  // }
   // 渲染Header
   renderHeader = () => {
     const { headerOpacity, show_header } = this.state;
@@ -301,16 +301,20 @@ class Index extends Component {
           </View>
           <View className='index-content'>
             {roomList.map(item => {
-              const img = item.roomeImages ? item.roomeImages[0] : ''
+              const img = item.roomImages ? item.roomImages[0] : ''
               return (<View className='index-content-item' onClick={() => this.goToDetail(item.id)}>
                 {/* <Image className='index-content-item-img' src={require('../../assets/img/expbj.jpg')}></Image> */}
-                <Image className='index-content-item-img' src={img}></Image>
+                <View className='index-content-item-pic'>
+                  <Image className='index-content-item-img' src={img}></Image>
+                </View>
                 <View className='index-content-item-r'>
                   <View className='title'>{item.name}</View>
                   <View className='address'>{item.address}</View>
                   <View className='label'>
-                    {this.dealLabel(item.matchingTag).map(label => {
-                      return (<View className='label-item'><Text className='label-item-txt'>{label}</Text></View>)
+                    {(item.matchingTag).map((label, index) => {
+                      return (<View className='label-item'>
+                        {index < 3 && <Text className='label-item-txt'>{label}</Text>}
+                      </View>)
                     })}
                   </View>
                   <View className='money'>
@@ -319,7 +323,7 @@ class Index extends Component {
                     {item.farAway && <View className='money-location'>
                       <View className='location-img-box'>
                         <Image className='money-location-img' src={require('../../assets/img/icon/location.png')}></Image>
-                        <Text>{item.farAway} m</Text>
+                        <Text>{Number(item.farAway) / 1000} km</Text>
                       </View>
                     </View>}
                   </View>
