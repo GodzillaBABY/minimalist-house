@@ -2,7 +2,7 @@ import Taro, { Component, Config } from '@tarojs/taro'
 import { View, Button, Text, Image, ScrollView, Swiper, SwiperItem, Map, Input } from '@tarojs/components'
 import { observer, inject } from '@tarojs/mobx'
 // import { AtIcon } from 'taro-ui'
-import { getRoomDetail, like, cancelLike } from '../../api/room'
+import { getRoomDetail, like, cancelLike, postUser } from '../../api/room'
 import Modal from '../../components/modal/modal'
 import './detail.less'
 
@@ -56,8 +56,8 @@ class Detail extends Component {
         districts: '流沙东接到',
         farAway: '600',
         id: 8,
-        latitude: '116.483038',
-        longitude: '39.990633',
+        latitude: 39.990633,
+        longitude: 116.483038,
         matchingTag: '冰箱,洗衣机',
         name: '勺找房-福田上步南店',
         nearby: '距离1号线300米；小区离沃尔玛步行400米；',
@@ -69,14 +69,16 @@ class Detail extends Component {
         "roomTag": "string"
       },
       markers: [{
-        longitude: '116.483038',
-        latitude: '39.990633'
+        longitude: 116.483038,
+        latitude: 39.990633
       }],
       roomListParmas: { districts: 'all', location: '116.483038,39.990633', page: 1, type: 1, per_page: 999 },
       likeFlg: false,
       phone: '',
       phonePop: false,
-      phoneFlg: false
+      phoneFlg: false,
+      phoneType: 0,//1:点击like；2:点击拨打电话
+      user: ''
     }
   }
   /**
@@ -133,9 +135,10 @@ class Detail extends Component {
   init = () => {
     const { id } = this.$router.params
     const phoneStore = Taro.getStorageSync('phone')
+    const userStore = Taro.getStorageSync('user')
     let phone
     if (phoneStore) {
-      this.setState({ phoneFlg: true, phone: Number(phoneStore) })
+      this.setState({ phoneFlg: true, user: userStore, phone: Number(phoneStore) })
       phone = phoneStore
     } else {
       phone = null
@@ -180,7 +183,8 @@ class Detail extends Component {
       const { likeFlg, phoneFlg, phone } = this.state
       if (!phoneFlg) {
         this.setState({
-          phonePop: true
+          phonePop: true,
+          phoneType: 1
         })
         return
       }
@@ -243,6 +247,14 @@ class Detail extends Component {
   }
 
   freeCall = () => {
+    const { phoneFlg, phone } = this.state
+    if (!phoneFlg) {
+      this.setState({
+        phonePop: true,
+        phoneType: 2
+      })
+      return
+    }
     const { roomData: { contactPhone } } = this.state
     Taro.makePhoneCall({
       phoneNumber: contactPhone, fail: () => {
@@ -250,6 +262,7 @@ class Detail extends Component {
       }
     })
   }
+
   copyWechat = () => {
     Taro.setClipboardData({
       data: 'wechat', success: (res) => {
@@ -260,7 +273,7 @@ class Detail extends Component {
     })
   }
   onConfirm = () => {
-    const { phone } = this.state
+    const { phone, phoneType, roomData } = this.state
     if (!phone) {
       Taro.showToast({ title: '请输入电话号码！' })
       return
@@ -270,6 +283,15 @@ class Detail extends Component {
     }
     Taro.setStorageSync('phone', phone)
     Taro.showToast({ title: '手机号记录成功' })
+    this.setState({ phoneFlg: true },
+      () => {
+        if (phoneType === 1) {
+          this.clkLike(roomData.id)
+        } else if (phoneType === 2) {
+          this.freeCall()
+        }
+        this.postUser(phone)
+      })
     this.onCancel()
   }
   onCancel = () => {
@@ -282,11 +304,53 @@ class Detail extends Component {
       phone: e.detail.value
     })
   }
+  getUserInfo = (e) => {
+    const userRes = e.currentTarget.userInfo
+    Taro.setStorageSync('user', userRes)
+    this.setState({ user: userRes })
+    this.postUser('', userRes.gender)
+
+  }
+  postUser = async (phone = '', sex = '') => {
+    try {
+      let sexP, phoneP, parmas
+      const { roomData: { id } } = this.state
+      if (phone) {
+        phoneP = phone
+        const user = Taro.getStorageSync('user')
+        if (user) {
+          sexP = user.gender == 1 ? '男' : '女'
+        } else {
+          sexP = '/'
+        }
+        parmas = { phone: phoneP, roomId: id, sex: sexP }
+      } else if (sex) {
+        let sexP = sex == '1' ? '男' : '女'
+        phoneP = Taro.getStorageSync('phone') || '/'
+        parmas = { phone: phoneP, roomId: id, sex: sexP }
+      }
+
+      const userRes = await postUser(parmas)
+      const { code, data } = userRes
+      if (code === 0) {
+        console.log('上传成功')
+      }
+    } catch (e) {
+      console.log(e)
+    }
+
+  }
   render() {
     const { counterStore: { counter } } = this.props
-    const { roomData, markers, likeFlg, phone, phonePop } = this.state
+    const { roomData, markers, likeFlg, phone, phonePop, phoneType, user } = this.state
     const { latitude, longitude, matchingTag } = roomData
-    const [latitudeN, longitudeN] = [Number(latitude), Number(longitude)]
+    let latitudeN = Number(latitude)
+    let longitudeN = Number(longitude)
+    // const [longitudeN, latitudeN] = [125.617722, 43.254822]
+    // const [latitudeN, longitudeN] = [, ]
+    console.log('map', typeof (latitudeN), longitude)
+
+
     return (<ScrollView scrollY className='detail'>
       <View className='share-box'>
         <View className='share-box-item' onClick={() => this.clkLike(roomData.id)}>
@@ -360,11 +424,11 @@ class Detail extends Component {
               onClick={this.getLocation}
             >查看路线 ></View>
           </View>
-          <View className='map-cover'
+          {/* <View className='map-cover'
             onClick={this.getLocation}
           >
             <Image className='map-cover-img' src={require('../../assets/expbj.jpg')}  ></Image>
-          </View>
+          </View> */}
           <Map className='map-map'
             markers={markers}
             show-location
@@ -379,9 +443,19 @@ class Detail extends Component {
           <View className='detail-contact-tel' onClick={this.freeCall}>
             <Text className='txt'>电话咨询</Text>
           </View>
-          <View className='detail-contact-wechat' onClick={this.copyWechat}>
+          {/* <View className='detail-contact-wechat' onClick={this.copyWechat}>
             <Text className='txt'>微信联系</Text>
-          </View>        </View>
+          </View>         */}
+          {user ? <Button openType={'contact'}
+            show-message-card={true}
+            className='detail-contact-wechat'
+          >微信联系</Button> : <Button
+            openType={'getUserInfo'}
+            onGetUserInfo={this.getUserInfo}
+            className='detail-contact-wechat'
+          >微信联系</Button>}
+          {/* <Button openType={'contact'} show-message-card={true} className='detail-contact-wechat' onClick={this.onCancel}>微信联系</Button> */}
+        </View>
 
       </View>
       <Modal

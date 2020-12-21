@@ -1,4 +1,4 @@
-import Taro, { Component, Config } from '@tarojs/taro'
+import Taro, { Component, Config, getUserInfo } from '@tarojs/taro'
 import { View, Button, Text, Image, ScrollView, Swiper, SwiperItem, Picker, Input } from '@tarojs/components'
 import { observer, inject } from '@tarojs/mobx'
 // import { AtIcon } from 'taro-ui'
@@ -31,7 +31,8 @@ class My extends Component {
     this.state = {
       phone: '',
       phonePop: false,
-      phoneFlg: false
+      phoneFlg: false,
+      user: ''
     }
   }
   /**
@@ -68,8 +69,12 @@ class My extends Component {
 
   componentDidShow() {
     const phoneStore = Taro.getStorageSync('phone')
+    const user = Taro.getStorageSync('user')
     if (phoneStore) {
       this.setState({ phoneFlg: true, phone: phoneStore })
+    }
+    if (user) {
+      this.setState({ user: user })
     }
   }
 
@@ -116,6 +121,11 @@ class My extends Component {
     }
     Taro.navigateTo({ url: `../like/like?phone=${phone}` })
   }
+  getUserInfo = (e) => {
+    const userRes = e.currentTarget.userInfo
+    Taro.setStorageSync('user', userRes)
+    this.setState({ user: userRes })
+  }
   onConfirm = () => {
     const { phone } = this.state
     if (!phone) {
@@ -126,6 +136,7 @@ class My extends Component {
       return
     }
     Taro.setStorageSync('phone', phone)
+    this.setState({ phoneFlg: true })
     Taro.showToast({ title: '手机号记录成功' })
     this.onCancel()
   }
@@ -141,22 +152,29 @@ class My extends Component {
   }
 
   freeCall = () => {
-    const { roomData: { contactPhone } } = this.state
     Taro.makePhoneCall({
-      phoneNumber: contactPhone, fail: () => {
+      phoneNumber: '15818512126', fail: () => {
         Taro.showToast({ title: '呼叫失败' })
       }
     })
   }
+
   render() {
     const { counterStore: { counter } } = this.props
-    const { phonePop } = this.state
+    const { phonePop, phone, user } = this.state
+    const { avatarUrl = `${require}('../../assets/my-head-img.png')`, nickName = '房友' } = user
     return (
       <View className='my' >
-        <View className='my-header'>
-          <Image src={require('../../assets/my-head-img.png')} className='my-header-head'></Image>
-          <Text className='my-header-name'>房友</Text>
-        </View>
+        {user ? <View className='my-header'>
+          <Image src={user && avatarUrl ? avatarUrl : require('../../assets/my-head-img.png')} className='my-header-head'></Image>
+          {/* likeFlg ? require('../../assets/liked.png') : require('../../assets/like.png') */}
+          <Text className='my-header-name'>{user && nickName ? nickName : '房友'}</Text>
+        </View> : <Button openType={'getUserInfo'} onGetUserInfo={this.getUserInfo} hoverClass='none' className='my-header'>
+            <Image src={require('../../assets/my-head-img.png')} className='my-header-head'></Image>
+            {/* likeFlg ? require('../../assets/liked.png') : require('../../assets/like.png') */}
+            <Text className='my-header-name'>房友</Text>
+          </Button>}
+
         <View className='my-section-box'>
           <View className='my-section' onClick={this.goToLikeList}>
             <Text className='my-section-txt'>我的收藏</Text>

@@ -42,7 +42,7 @@ class Index extends Component {
       headerLabel: [
         '品牌公寓', '精准查找', '快速看房', '无中介费'
       ],
-      quyu: ['全部区域', '流沙南街道', '流沙东街道', '流沙西街道'],
+      quyu: ['全部区域', '流沙东街道', '流沙南街道', '流沙西街道', '流沙北街道'],
       quyuChecked: '全部区域',
       swiperBanner: ['../../assets/expbj.jpg', '../../assets/expbj.jpg'],
       roomList: [
@@ -173,7 +173,7 @@ class Index extends Component {
   quyuChange = (e) => {
 
     let parmas = this.state.roomListParmas, districts
-    districts = e.detail.value == 0 ? 'all' : e.detail.value
+    districts = e.detail.value === '0' ? 'all' : this.state.quyu[e.detail.value]
     parmas = { ...parmas, districts: districts }
     this.setState({
       quyuChecked: this.state.quyu[e.detail.value],

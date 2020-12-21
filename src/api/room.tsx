@@ -18,3 +18,6 @@ export function cancelLike(parmas): Promise<IResult<any>> {
 export function getBanner(): Promise<IResult<any>> {
   return httpGet('/images/room/getImages');
 }
+export function postUser(parmas): Promise<IResult<any>> {
+  return httpPost('/userInfo/save', parmas);
+}
