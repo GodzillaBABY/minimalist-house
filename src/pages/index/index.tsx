@@ -1,5 +1,5 @@
 import Taro, { Component, Config, getApp } from '@tarojs/taro'
-import { View, Button, Text, Image, ScrollView, Swiper, SwiperItem, Picker } from '@tarojs/components'
+import { View, Button, Text, Image, ScrollView, Swiper, SwiperItem, Picker, Input } from '@tarojs/components'
 import { observer, inject } from '@tarojs/mobx'
 // import { AtIcon } from 'taro-ui'
 import locationFun from '../../util/location'
@@ -71,10 +71,11 @@ class Index extends Component {
         //   location: '2.64km'
         // }
       ],
-      roomListParmas: { districts: 'all', location: '116.483038,39.990633', page: 1, type: 0, per_page: 20 },
+      roomListParmas: { districts: 'all', location: '116.483038,39.990633', page: 1, type: 0, per_page: 20, roomName: '' },
       totalPage: 1,
       rentFlg: false,
-      rentC: false
+      rentC: false,
+      searchVal: ''
     }
   }
   /**
@@ -107,8 +108,15 @@ class Index extends Component {
   componentDidMount() {
 
   }
+  onShareAppMessage = (res) => {
 
-  componentWillUnmount() { }
+    const shareParams = {
+      title: '城市梦想家',
+      // imageUrl: roomData.roomImages[0],
+      path: '/pages/index/index'
+    }
+    return shareParams
+  }
 
   componentDidShow() {
     // console.log(this.props.counterStore)
@@ -118,11 +126,11 @@ class Index extends Component {
   init = async (res) => {
     const { longitude, latitude } = res
     const parmas = {
-      districts: 'all', location: `${longitude},${latitude}`, page: 1, type: 0, per_page: 20
+      districts: 'all', location: `${longitude},${latitude}`, page: 1, type: 0, per_page: 20, roomName: ''
     }
     this.setState({ parmas })
     this.getBanner()
-    this.getRoomList(parmas)
+    this.getRoomListFun(parmas)
   }
   getMore = () => {
     let parmas = this.state.roomListParmas
@@ -131,7 +139,7 @@ class Index extends Component {
     const page = parmas.page + 1
     parmas = { ...parmas, page: page }
     this.setState({ roomListParmas: parmas })
-    this.getRoomList(parmas, true)
+    this.getRoomListFun(parmas, true)
   }
   getBanner = async () => {
     try {
@@ -149,7 +157,7 @@ class Index extends Component {
       Taro.showToast({ title: '网络错误' })
     }
   }
-  getRoomList = async (parmas = { districts: 'all', location: '116.483038,39.990633', page: 1, type: 1, per_page: 20 }, isMore = false) => {
+  getRoomListFun = async (parmas = { districts: 'all', location: '116.483038,39.990633', page: 1, type: 1, per_page: 20, roomName: '' }, isMore = false) => {
     try {
       Taro.showLoading({ title: '加载中...' })
       const roomListRes = await getRoomList(parmas)
@@ -179,7 +187,7 @@ class Index extends Component {
       quyuChecked: this.state.quyu[e.detail.value],
       parmas: parmas
     })
-    this.getRoomList(parmas)
+    this.getRoomListFun(parmas)
   }
   // 页面滚动
   handleScroll = e => {
@@ -238,6 +246,36 @@ class Index extends Component {
   goToIndex = () => {
     return
   }
+  inputValueChange = (value: string = '') => {
+    this.setState({
+      searchVal: value
+    });
+  };
+  // 监控渲染层的input的值变化
+  onInputChangesss = e => {
+    if (e && e.detail) {
+      this.inputValueChange(e.detail.value)
+    }
+  };
+  // 清除渲染层的input的值
+  clearInputValue = () => {
+    this.inputValueChange('');
+  };
+  //搜索房源
+  searchRoom = (isCancel = false) => {
+    const { roomListParmas, searchVal } = this.state
+    let params, type
+    params = {
+      ...roomListParmas,
+      roomName: isCancel ? '' : searchVal
+    }
+    this.setState({ roomListParmas: params })
+    if (isCancel) {
+      this.clearInputValue()
+    }
+    this.getRoomListFun(params)
+
+  }
   // dealLabel = (label) => {
   //   if (!label) return
   //   const labelRes = label.split(',')
@@ -281,18 +319,18 @@ class Index extends Component {
       type = false
     }
     this.setState({ rentFlg: type, rentC: true, roomListParmas: params })
-    this.getRoomList(params)
+    this.getRoomListFun(params)
   }
   render() {
     // console.log(location, 111111)
-    const { headerLabel, quyu, quyuChecked, banner, swiperBanner, roomList, rentFlg, rentC } = this.state
+    const { headerLabel, quyu, quyuChecked, banner, swiperBanner, roomList, rentFlg, rentC, searchVal } = this.state
     const { bgImages = `${require}('../../assets/expbj.jpg')`, wheelImages = [`${require}('../../assets/expbj.jpg')`, `${require}('../../assets/expbj.jpg')`] } = banner
     console.log(rentFlg, 'rent')
     return (
       <ScrollView scrollY className='index' onScroll={this.handleScroll} onScrollToLower={this.getMore}  >
         {this.renderHeader()}
         <View className='index-header'>
-          <Image className='index-header-banner' src={bgImages ? bgImages : require('../../assets/expbj.jpg')}></Image>
+          <Image className='index-header-banner' mode='widthFix' src={bgImages ? bgImages : require('../../assets/expbj.jpg')}></Image>
           <View className='index-header-main'>
             <View className='index-header-info'>
               <View className='info-logo'>
@@ -341,6 +379,53 @@ class Index extends Component {
                 </View>
               </SwiperItem> */}
             </Swiper>
+          </View>
+          <View className='p-index-search'>
+            <View className='p-index-search-border'>
+              <View className='p-index-search-preview'>
+                <Image
+                  src={require('../../assets/search-icon.png')}
+                  className='p-index-search-icon-magnifier'
+                />
+              </View>
+              <Input
+                className='p-index-search-border-input'
+                value={searchVal}
+                onInput={this.onInputChangesss}
+                placeholderClass='p-index-search-border-input-placeholder'
+                maxLength={20}
+                placeholder='请输入想查找的房源'
+              />
+              {/* <View
+                className={
+                  'p-index-search-clear ' +
+                  (searchVal && searchVal.length ? 'p-index-search-clear-show' : '')
+                }
+                hoverClass='hover-opacity'
+                onClick={this.clearInputValue}
+              >
+                <Image
+                  src={require('../../assets/image-delete.png')}
+                  className='p-index-search-icon-clear'
+                />
+              </View> */}
+            </View>
+            <View
+              className='p-index-search-cancel'
+              hoverClass='hover-opacity'
+              onClick={() => this.searchRoom(false)}
+            >
+              <Text className='p-index-search-cancel-text'>搜索</Text>
+            </View>
+            <View
+              className='p-index-search-cancel'
+              hoverClass='hover-opacity'
+              onClick={() => { this.searchRoom(true) }}
+              style={{ marginRight: '20rpx' }}
+            >
+              <Text className='p-index-search-cancel-text'>取消</Text>
+            </View>
+            <View className='p-index-search-border-bottom' />
           </View>
           <View className='index-tab' style={this.getPaddingTop()}>
             <View className='index-tab-item'>

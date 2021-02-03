@@ -89,7 +89,8 @@ function handleTips(tips: boolean | string, result: IResult<any>) {
 }
 
 const AjaxFn = async function (method: TMethod, url: string, data: object | string, tips: boolean | string = false, conf: any): Promise<IResult<any>> {
-  const hosts = 'https://www.mandaotec.cn/api'
+  // const hosts = 'https://www.mandaotec.cn/api'
+  const hosts = 'https://www.m3brand.top/api/'
   const newUrl = hosts + url
   const dfOpt: ITaroRequest = {
     header: {

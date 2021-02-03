@@ -35,7 +35,8 @@ class App extends Component {
       'pages/index/index',
       'pages/detail/detail',
       'pages/my/my',
-      'pages/like/like'
+      'pages/like/like',
+      'pages/vr/vr'
     ],
     window: {
       backgroundTextStyle: 'light',

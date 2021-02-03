@@ -1,4 +1,4 @@
-import Taro, { Component, Config } from '@tarojs/taro'
+import Taro, { Component, Config, navigateTo } from '@tarojs/taro'
 import { View, Button, Text, Image, ScrollView, Swiper, SwiperItem, Map, Input } from '@tarojs/components'
 import { observer, inject } from '@tarojs/mobx'
 // import { AtIcon } from 'taro-ui'
@@ -35,10 +35,11 @@ const labelMap =
   '音响': `${require('../../assets/yinxiang.png')}`,
   '自助快递柜': `${require('../../assets/kuaidi.png')}`,
   '公共办公空间': `${require('../../assets/bangong.png')}`,
-  '电视改为投影': `${require('../../assets/touying.png')}`,
+  '投影': `${require('../../assets/touying.png')}`,
   '洗衣机': `${require('../../assets/xiyiji.png')}`,
   '空调': `${require('../../assets/kongtiao.png')}`,
   '橱柜': `${require('../../assets/chugui.png')}`,
+  'wifi': `${require('../../assets/wifi.png')}`,
   '电子锁': `${require('../../assets/dianzi.png')}`,
 }
 
@@ -66,7 +67,8 @@ class Detail extends Component {
           'https://tgi1.jia.com/123/203/23203900.jpg',
           'https://tgi1.jia.com/123/203/23203900.jpg',
         ],
-        "roomTag": "string"
+        "roomTag": "string",
+        vrUrl: ''
       },
       markers: [{
         longitude: 116.483038,
@@ -340,10 +342,14 @@ class Detail extends Component {
     }
 
   }
+  goToVr = () => {
+    const { vrUrl = '' } = this.state.roomData
+    Taro.navigateTo({ url: `/pages/vr/vr?url=${vrUrl}` })
+  }
   render() {
     const { counterStore: { counter } } = this.props
     const { roomData, markers, likeFlg, phone, phonePop, phoneType, user } = this.state
-    const { latitude, longitude, matchingTag } = roomData
+    const { latitude, longitude, matchingTag, vrUrl } = roomData
     let latitudeN = Number(latitude)
     let longitudeN = Number(longitude)
     // const [longitudeN, latitudeN] = [125.617722, 43.254822]
@@ -388,6 +394,12 @@ class Detail extends Component {
       <View className='detail-main'>
         <View className='detail-title'>
           <Text className='detail-title-txt'>{roomData.name}</Text>
+          {vrUrl && <View className='detail-vr'
+            onClick={this.goToVr}
+          >
+            VR看房
+           <Image className='detail-vr-img' src={require('../../assets/right-arrow1.png')}></Image>
+          </View>}
         </View>
         <View className='detail-price'>
           <View className='price'>{roomData.price}</View>
